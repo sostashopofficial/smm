@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SMM Panel Admin | Full Control Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{font-family:'Plus Jakarta Sans',sans-serif;margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{--primary:#0f8b8b;--primary-light:#14b8a6;--primary-dark:#0a6e6e;--accent:#f59e0b;--bg-main:#f0f4f8;--bg-card:#ffffff;--bg-input:#fefefe;--text-main:#0f172a;--text-muted:#64748b;--border:#e2e8f0;--border-light:#f1f5f9;--shadow-sm:0 2px 8px rgba(0,0,0,0.04);--shadow-md:0 8px 24px rgba(0,0,0,0.06);--shadow-lg:0 16px 40px rgba(0,0,0,0.08);--radius-xl:20px;--radius-2xl:28px;--radius-full:9999px}
+        body{background:var(--bg-main);padding:24px;overflow-x:hidden}
+        body::before{content:'';position:fixed;top:-200px;right:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(15,139,139,0.06)0%,transparent 70%);border-radius:50%;z-index:0;pointer-events:none;animation:floatBg 12s ease-in-out infinite}
+        body::after{content:'';position:fixed;bottom:-150px;left:-150px;width:400px;height:400px;background:radial-gradient(circle,rgba(245,158,11,0.04)0%,transparent 70%);border-radius:50%;z-index:0;pointer-events:none;animation:floatBg 10s ease-in-out infinite reverse}
+        @keyframes floatBg{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,20px) scale(1.08)}}
+
+        .admin-card{background:var(--bg-card);border-radius:var(--radius-2xl);box-shadow:var(--shadow-md);transition:all .25s;border:1px solid var(--border-light);position:relative;z-index:1}
+        .admin-card:hover{box-shadow:var(--shadow-lg)}
+
+        .stat-card{border-radius:var(--radius-2xl);padding:1.4rem;position:relative;overflow:hidden;color:white}
+        .stat-card::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,0.08);border-radius:50%}
+        .stat-card::after{content:'';position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;background:rgba(255,255,255,0.05);border-radius:50%}
+        .stat-gradient-1{background:linear-gradient(135deg,#0f8b8b 0%,#0d7575 100%)}
+        .stat-gradient-2{background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)}
+        .stat-gradient-3{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)}
+        .stat-gradient-4{background:linear-gradient(135deg,#10b981 0%,#059669 100%)}
+
+        .btn-primary{background:linear-gradient(135deg,#0f8b8b,#0d7575);color:white;padding:11px 22px;border-radius:var(--radius-full);font-weight:700;font-size:13px;transition:all .2s;cursor:pointer;border:none;box-shadow:0 4px 12px rgba(15,139,139,0.25);display:inline-flex;align-items:center;gap:6px}
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,139,139,0.3)}
+        .btn-primary:active{transform:scale(0.97)}
+        .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+        .btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary);padding:10px 20px;border-radius:var(--radius-full);font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+        .btn-outline:hover{background:rgba(15,139,139,0.05)}
+
+        .input-field{width:100%;padding:13px 18px;border:1.5px solid var(--border);border-radius:16px;outline:none;font-size:14px;font-weight:500;transition:all .2s;background:var(--bg-input);color:var(--text-main)}
+        .input-field::placeholder{color:#94a3b8}
+        .input-field:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(15,139,139,0.1)}
+
+        .tab-bar{display:flex;flex-wrap:wrap;gap:4px;background:var(--bg-card);padding:5px;border-radius:var(--radius-full);box-shadow:var(--shadow-sm);border:1px solid var(--border-light);width:fit-content}
+        .tab-active{background:linear-gradient(135deg,#0f8b8b,#0d7575);color:white;border-radius:var(--radius-full);padding:9px 22px;font-weight:700;font-size:13px;cursor:pointer;border:none;box-shadow:0 4px 12px rgba(15,139,139,0.2);transition:all .2s}
+        .tab-inactive{background:transparent;color:var(--text-muted);padding:9px 22px;font-weight:600;font-size:13px;cursor:pointer;border:none;border-radius:var(--radius-full);transition:all .2s}
+
+        .data-row{transition:all .15s;border:1px solid var(--border-light);border-radius:16px;padding:16px;background:var(--bg-card)}
+        .data-row:hover{background:#f8fafc;border-color:#e2e8f0;transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+
+        .badge{padding:5px 12px;border-radius:var(--radius-full);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px}
+        .badge-pending{background:#fef3c7;color:#b45309}
+        .badge-completed{background:#d1fae5;color:#065f46}
+        .badge-processing{background:#dbeafe;color:#1e40af}
+        .badge-cancelled{background:#fee2e2;color:#991b1b}
+
+        .toast-container{position:fixed;top:24px;right:24px;z-index:9999;pointer-events:none;display:flex;flex-direction:column;gap:8px}
+        .toast-item{pointer-events:auto;padding:14px 20px;border-radius:16px;font-size:13px;font-weight:700;backdrop-filter:blur(20px);animation:toastIn .35s cubic-bezier(.16,1,.3,1);display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px rgba(0,0,0,0.15);max-width:380px}
+        .toast-success{background:rgba(16,185,129,0.95);color:white}
+        .toast-error{background:rgba(239,68,68,0.95);color:white}
+        .toast-info{background:rgba(15,139,139,0.95);color:white}
+        @keyframes toastIn{from{opacity:0;transform:translateX(30px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+
+        .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.5);backdrop-filter:blur(8px);z-index:9998;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+        .modal-overlay.show{opacity:1;pointer-events:auto}
+        .modal-box{background:var(--bg-card);border-radius:var(--radius-2xl);width:92%;max-width:520px;padding:8px;transform:scale(.92) translateY(20px);transition:transform .35s cubic-bezier(.16,1,.3,1);box-shadow:0 25px 60px rgba(0,0,0,0.15)}
+        .modal-overlay.show .modal-box{transform:scale(1) translateY(0)}
+        .modal-inner{padding:20px 24px 28px}
+
+        .confirm-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.5);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+        .confirm-overlay.show{opacity:1;pointer-events:auto}
+        .confirm-box{background:var(--bg-card);border-radius:var(--radius-2xl);padding:28px;max-width:380px;width:90%;box-shadow:0 25px 50px rgba(0,0,0,0.2)}
+
+        .live-dot{width:7px;height:7px;background:#ef4444;border-radius:50%;animation:pulseDot 1.5s infinite}
+        @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+    </style>
+</head>
+<body>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box text-center">
+        <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-exclamation-triangle text-red-500 text-xl"></i></div>
+        <h3 id="confirmTitle" class="font-bold text-lg mb-2">Are you sure?</h3>
+        <p id="confirmMsg" class="text-sm text-gray-500 mb-6"></p>
+        <div class="flex gap-3">
+            <button id="confirmNoBtn" class="flex-1 py-3 rounded-2xl font-bold text-sm bg-gray-100 text-gray-700 cursor-pointer border-none">Cancel</button>
+            <button id="confirmYesBtn" class="flex-1 py-3 rounded-2xl font-bold text-sm bg-red-500 text-white cursor-pointer border-none">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Add/Edit Service -->
+<div class="modal-overlay" id="serviceModal">
+    <div class="modal-box">
+        <div class="modal-inner">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="font-extrabold text-lg" id="modalTitle">Add New Service</h3>
+                <button onclick="closeServiceModal()" class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center cursor-pointer border-none text-gray-500"><i class="fas fa-times text-sm"></i></button>
+            </div>
+            <input type="hidden" id="modalEditId" value="">
+            <div class="space-y-3">
+                <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Service Name *</label><input id="modalServiceName" placeholder="e.g., Instagram Followers [Real]" class="input-field mt-1"></div>
+                <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Category *</label><input id="modalServiceCategory" placeholder="e.g., Instagram" class="input-field mt-1"></div>
+                
+                <div class="p-3 bg-teal-50 border border-teal-200 rounded-xl">
+                    <label class="text-[10px] font-extrabold text-teal-700 uppercase tracking-widest block mb-1"><i class="fas fa-plug mr-1"></i> API Provider Service ID (Optional)</label>
+                    <input id="modalServiceApiId" placeholder="e.g., 1024 (Provider's Service ID)" class="input-field bg-white">
+                    <p class="text-[10px] text-teal-600 mt-1">এই সার্ভিস আইডি দিলে অর্ডার অটোমেটিক Provider API-তে চলে যাবে।</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Price/1k *</label><input id="modalServicePrice" type="number" placeholder="৳" class="input-field mt-1"></div>
+                    <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Min Qty</label><input id="modalServiceMin" type="number" placeholder="10" class="input-field mt-1" value="10"></div>
+                    <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Max Qty</label><input id="modalServiceMax" type="number" placeholder="100000" class="input-field mt-1" value="100000"></div>
+                </div>
+                <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Description</label><textarea id="modalServiceDesc" placeholder="Service details, speed, quality info..." class="input-field mt-1" rows="2" style="resize:none"></textarea></div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="saveService()" class="btn-primary flex-1 justify-center" id="modalSaveBtn"><i class="fas fa-check"></i> Save Service</button>
+                <button onclick="closeServiceModal()" class="btn-outline flex-1 justify-center">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto relative" style="z-index:1">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+        <div>
+            <div class="flex items-center gap-3 mb-1">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-teal-600 to-teal-700 flex items-center justify-center text-white shadow-lg"><i class="fas fa-crown"></i></div>
+                <h1 class="text-3xl font-black tracking-tight" style="color:var(--text-main)">SMM Admin</h1>
+            </div>
+            <p class="text-sm ml-14" style="color:var(--text-muted)">API Automated & Full Control Dashboard</p>
+        </div>
+        <div class="flex gap-2 items-center">
+            <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl shadow-sm border text-xs font-bold" style="border-color:var(--border-light)">
+                <div class="live-dot"></div><span style="color:var(--text-muted)">Live</span>
+            </div>
+            <button onclick="refreshAllData()" class="btn-outline" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div class="stat-card stat-gradient-1">
+            <div class="flex justify-between items-start relative z-10">
+                <div><p class="text-xs font-bold opacity-80 uppercase tracking-wider">Total Users</p><p id="totalUsersStat" class="text-3xl font-black mt-1">0</p></div>
+                <div class="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center"><i class="fas fa-users text-lg"></i></div>
+            </div>
+        </div>
+        <div class="stat-card stat-gradient-2">
+            <div class="flex justify-between items-start relative z-10">
+                <div><p class="text-xs font-bold opacity-80 uppercase tracking-wider">Total Orders</p><p id="totalOrdersStat" class="text-3xl font-black mt-1">0</p></div>
+                <div class="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center"><i class="fas fa-chart-line text-lg"></i></div>
+            </div>
+        </div>
+        <div class="stat-card stat-gradient-3">
+            <div class="flex justify-between items-start relative z-10">
+                <div><p class="text-xs font-bold opacity-80 uppercase tracking-wider">Revenue (BDT)</p><p id="totalRevenueStat" class="text-3xl font-black mt-1">0</p></div>
+                <div class="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center"><i class="fas fa-coins text-lg"></i></div>
+            </div>
+        </div>
+        <div class="stat-card stat-gradient-4">
+            <div class="flex justify-between items-start relative z-10">
+                <div><p class="text-xs font-bold opacity-80 uppercase tracking-wider">Pending Orders</p><p id="pendingOrdersStat" class="text-3xl font-black mt-1">0</p></div>
+                <div class="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center"><i class="fas fa-clock text-lg"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar mb-7">
+        <button onclick="switchAdminTab('users')" id="tabUsersBtn" class="tab-active"><i class="fas fa-users mr-1.5"></i>Users</button>
+        <button onclick="switchAdminTab('services')" id="tabServicesBtn" class="tab-inactive"><i class="fas fa-server mr-1.5"></i>Services</button>
+        <button onclick="switchAdminTab('orders')" id="tabOrdersBtn" class="tab-inactive"><i class="fas fa-list-check mr-1.5"></i>Orders</button>
+        <button onclick="switchAdminTab('deposits')" id="tabDepositsBtn" class="tab-inactive"><i class="fas fa-wallet mr-1.5"></i>Deposits</button>
+        <button onclick="switchAdminTab('settings')" id="tabSettingsBtn" class="tab-inactive"><i class="fas fa-cog mr-1.5"></i>API & Settings</button>
+    </div>
+
+    <!-- TAB: USERS -->
+    <div id="usersTab" class="admin-card p-6">
+        <div class="flex justify-between items-center mb-5 flex-wrap gap-3">
+            <h2 class="text-xl font-extrabold"><i class="fas fa-user-shield mr-2" style="color:var(--primary)"></i>Manage Users</h2>
+            <div class="flex gap-2">
+                <input type="text" id="searchUserInput" placeholder="Search UID / Name..." class="input-field" style="width:240px;border-radius:var(--radius-full);padding:10px 18px;font-size:13px">
+                <button onclick="searchUsers()" class="btn-outline" style="padding:10px 16px"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+        <div class="overflow-x-auto rounded-2xl border" style="border-color:var(--border-light)">
+            <table class="w-full text-sm">
+                <thead><tr class="bg-gray-50 text-left"><th class="p-3.5 font-bold text-xs uppercase tracking-wider text-gray-500">UID</th><th class="p-3.5 font-bold text-xs uppercase tracking-wider text-gray-500">Name</th><th class="p-3.5 font-bold text-xs uppercase tracking-wider text-gray-500">Balance</th><th class="p-3.5 font-bold text-xs uppercase tracking-wider text-gray-500">Orders</th><th class="p-3.5 font-bold text-xs uppercase tracking-wider text-gray-500">Action</th></tr></thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+        <div class="mt-6 border-t pt-6" style="border-color:var(--border-light)">
+            <h3 class="font-extrabold mb-4 text-base"><i class="fas fa-sliders-h mr-2" style="color:var(--primary)"></i>Adjust Balance</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <input type="text" id="adminUserId" placeholder="User UID" class="input-field">
+                <input type="number" id="adminBalanceAmount" placeholder="Amount (BDT)" class="input-field">
+                <button onclick="updateUserBalance()" class="btn-primary justify-center"><i class="fas fa-wallet"></i> Set Balance</button>
+                <button onclick="addUserBalance()" class="btn-outline justify-center"><i class="fas fa-plus-circle"></i> Add Balance</button>
+            </div>
+            <p id="userBalanceMsg" class="text-xs mt-2 font-semibold" style="color:var(--text-muted)"></p>
+        </div>
+    </div>
+
+    <!-- TAB: SERVICES -->
+    <div id="servicesTab" class="admin-card p-6 hidden">
+        <div class="flex justify-between items-center mb-5 flex-wrap gap-3">
+            <h2 class="text-xl font-extrabold"><i class="fas fa-server mr-2" style="color:var(--primary)"></i>Manage Services</h2>
+            <button onclick="openAddServiceModal()" class="btn-primary"><i class="fas fa-plus"></i> Add Service</button>
+        </div>
+        <div id="servicesListContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[550px] overflow-y-auto pr-1"></div>
+    </div>
+
+    <!-- TAB: ORDERS -->
+    <div id="ordersTab" class="admin-card p-6 hidden">
+        <div class="flex justify-between items-center mb-5 flex-wrap gap-3">
+            <h2 class="text-xl font-extrabold"><i class="fas fa-truck-fast mr-2" style="color:var(--primary)"></i>All Orders</h2>
+            <div class="flex gap-2 items-center">
+                <select id="orderStatusFilter" class="input-field" style="width:160px;border-radius:var(--radius-full);padding:9px 16px;font-size:13px">
+                    <option value="all">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <button onclick="renderOrdersTable()" class="btn-outline" style="padding:9px 16px"><i class="fas fa-filter"></i></button>
+            </div>
+        </div>
+        <div id="ordersTableContainer" class="space-y-3 max-h-[550px] overflow-y-auto pr-1"></div>
+    </div>
+
+    <!-- TAB: DEPOSITS -->
+    <div id="depositsTab" class="admin-card p-6 hidden">
+        <div class="flex justify-between items-center mb-5 flex-wrap gap-3">
+            <h2 class="text-xl font-extrabold"><i class="fas fa-hand-holding-dollar mr-2" style="color:var(--primary)"></i>Deposit Requests</h2>
+            <div class="flex gap-2">
+                <button onclick="filterDeposits('all')" class="btn-outline dep-filter-btn" data-filter="all" style="padding:7px 14px;font-size:12px">All</button>
+                <button onclick="filterDeposits('Pending')" class="btn-outline dep-filter-btn" data-filter="Pending" style="padding:7px 14px;font-size:12px">Pending</button>
+                <button onclick="filterDeposits('Approved')" class="btn-outline dep-filter-btn" data-filter="Approved" style="padding:7px 14px;font-size:12px">Approved</button>
+                <button onclick="filterDeposits('Rejected')" class="btn-outline dep-filter-btn" data-filter="Rejected" style="padding:7px 14px;font-size:12px">Rejected</button>
+            </div>
+        </div>
+        <div id="depositsListContainer" class="space-y-3 max-h-[550px] overflow-y-auto pr-1"></div>
+    </div>
+
+    <!-- TAB: SETTINGS & API CONFIG -->
+    <div id="settingsTab" class="admin-card p-6 hidden">
+        <h2 class="text-xl font-extrabold mb-5"><i class="fas fa-cog mr-2" style="color:var(--primary)"></i>API Provider & Settings</h2>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- API Provider Settings -->
+            <div class="space-y-4 p-5 rounded-2xl border bg-slate-50 border-slate-200">
+                <h3 class="font-extrabold text-base text-slate-800 flex items-center gap-2"><i class="fas fa-plug text-teal-600"></i> Provider API Configuration</h3>
+                <p class="text-xs text-slate-500">এখানে আপনার Provider-এর API URL ও API Key দিন। ইউজার অর্ডার করলে অটোমেটিক এখানে রিকোয়েস্ট যাবে।</p>
+                
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Provider API URL *</label>
+                    <input type="text" id="adminApiUrl" placeholder="https://providerdomain.com/api/v2" class="input-field mt-1 bg-white">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Provider API Key *</label>
+                    <input type="password" id="adminApiKey" placeholder="e.g. 91a8b2c3d4e5f6..." class="input-field mt-1 bg-white">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="saveSettings()" class="btn-primary flex-1 justify-center"><i class="fas fa-save"></i> Save API Config</button>
+                    <button onclick="checkApiProviderBalance()" class="btn-outline flex-1 justify-center"><i class="fas fa-wallet"></i> Check API Balance</button>
+                </div>
+                
+                <div id="apiBalanceResult" class="hidden p-3 rounded-xl bg-teal-100 text-teal-800 text-xs font-bold"></div>
+            </div>
+
+            <!-- Panel Configuration -->
+            <div class="space-y-4">
+                <h3 class="font-extrabold text-base text-slate-800 flex items-center gap-2"><i class="fas fa-headset text-teal-600"></i> Social & Contact Links</h3>
+                <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Admin WhatsApp</label><input type="text" id="adminWhatsapp" placeholder="+8801XXXXXXXXX" class="input-field mt-1"></div>
+                <div><label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Telegram Username</label><input type="text" id="adminTelegram" placeholder="@admin" class="input-field mt-1"></div>
+                
+                <button onclick="exportBackup()" class="w-full py-3 rounded-xl font-bold text-sm text-white cursor-pointer border-none mt-4" style="background:#1e293b"><i class="fas fa-download mr-2"></i>Export Users Backup (JSON)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="importmap">
+{"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js","firebase/firestore":"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"}}
+</script>
+<script type="module">
+import{initializeApp}from"firebase/app";
+import{getFirestore,doc,collection,getDocs,getDoc,setDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,addDoc,serverTimestamp}from"firebase/firestore";
+
+const firebaseConfig={apiKey:"AIzaSyCdPFDGIxUBDi3C-ES9I18LsNy_621Bf_s",authDomain:"takahubpro.firebaseapp.com",projectId:"takahubpro",storageBucket:"takahubpro.firebasestorage.app",messagingSenderId:"683565669304",appId:"1:683565669304:web:acc776890740c726b20d4d"};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+window.dbRef=db;
+
+let allUsersCache=[],allServicesCache=[],allOrdersCache=[],allDepositsCache=[];
+let currentDepFilter='all';
+
+function showToast(msg,type='info',dur=3000){
+    const c=document.getElementById('toastContainer'),t=document.createElement('div');
+    const icons={success:'fa-check-circle',error:'fa-times-circle',info:'fa-info-circle'};
+    t.className=`toast-item toast-${type}`;
+    t.innerHTML=`<i class="fas ${icons[type]||icons.info}"></i><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(()=>{t.classList.add('toast-out');setTimeout(()=>t.remove(),300)},dur);
+}
+
+let confirmCallback=null;
+function showConfirm(title,msg,onYes){
+    document.getElementById('confirmTitle').innerText=title;
+    document.getElementById('confirmMsg').innerText=msg;
+    document.getElementById('confirmOverlay').classList.add('show');
+    confirmCallback=onYes;
+}
+function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('show');confirmCallback=null}
+document.getElementById('confirmNoBtn').addEventListener('click',closeConfirm);
+document.getElementById('confirmYesBtn').addEventListener('click',()=>{if(confirmCallback)confirmCallback();closeConfirm()});
+
+async function updateStats(){
+    try{
+        const uSnap=await getDocs(collection(db,"users"));
+        const oSnap=await getDocs(collection(db,"orders"));
+        let totalOrders=0,totalRevenue=0,pendingCount=0;
+        oSnap.forEach(d=>{const data=d.data();totalOrders++;totalRevenue+=data.cost||0;if(data.status==="Pending")pendingCount++});
+        document.getElementById('totalUsersStat').innerText = uSnap.size;
+        document.getElementById('totalOrdersStat').innerText = totalOrders;
+        document.getElementById('totalRevenueStat').innerText = Math.round(totalRevenue);
+        document.getElementById('pendingOrdersStat').innerText = pendingCount;
+    }catch(e){console.error(e)}
+}
+
+async function loadUsers(){
+    try{
+        const snap=await getDocs(collection(db,"users"));
+        allUsersCache=[];let html="";
+        snap.forEach(d=>{const u={uid:d.id,...d.data()};allUsersCache.push(u);
+            html+=`<tr class="border-t" style="border-color:var(--border-light)">
+                <td class="p-3.5 font-mono text-xs font-semibold" style="color:var(--text-muted)">${u.uid}</td>
+                <td class="p-3.5 font-bold">${u.name||'User'}</td>
+                <td class="p-3.5 font-extrabold" style="color:var(--primary)">৳${(u.balance||0).toFixed(2)}</td>
+                <td class="p-3.5 font-semibold">${u.total_orders||0}</td>
+                <td class="p-3.5"><button onclick="quickEditUser('${u.uid}')" class="text-xs font-bold cursor-pointer border-none bg-transparent" style="color:var(--primary)"><i class="fas fa-pen-to-square mr-1"></i>Edit</button></td>
+            </tr>`});
+        document.getElementById('usersTableBody').innerHTML=html||`<tr><td colspan="5" class="p-8 text-center" style="color:var(--text-muted)">No users found</td></tr>`;
+    }catch(e){console.error(e)}
+}
+window.quickEditUser=(uid)=>{document.getElementById('adminUserId').value=uid;showToast('User UID loaded','info',2000)};
+window.updateUserBalance=async()=>{
+    const uid=document.getElementById('adminUserId').value,amt=parseFloat(document.getElementById('adminBalanceAmount').value);
+    if(!uid||isNaN(amt)){showToast('Enter UID & Valid Amount','error');return}
+    try{await updateDoc(doc(db,"users",uid),{balance:amt});showToast(`Balance set to ৳${amt}`,'success');loadUsers();updateStats()}
+    catch(e){showToast('Error updating balance','error')}
+};
+window.addUserBalance=async()=>{
+    const uid=document.getElementById('adminUserId').value,addAmt=parseFloat(document.getElementById('adminBalanceAmount').value);
+    if(!uid||isNaN(addAmt)){showToast('Enter UID & Valid Amount','error');return}
+    try{
+        const snap=await getDoc(doc(db,"users",uid));
+        const curr=snap.exists()?(snap.data().balance||0):0;
+        await updateDoc(doc(db,"users",uid),{balance:curr+addAmt});
+        showToast(`+৳${addAmt} added`,'success');loadUsers();updateStats();
+    }catch(e){showToast('Error adding balance','error')}
+};
+
+// ==========================================
+// SERVICES CRUD WITH API SERVICE ID
+// ==========================================
+async function loadServicesAdmin(){
+    try{
+        const snap=await getDocs(collection(db,"services"));
+        allServicesCache=[];const c=document.getElementById('servicesListContainer');c.innerHTML="";
+        if(!snap.size){c.innerHTML=`<div class="col-span-2 text-center py-16" style="color:var(--text-muted)"><p class="font-bold">No services yet</p></div>`;return}
+        snap.forEach(d=>{const s={id:d.id,...d.data()};allServicesCache.push(s);
+            c.innerHTML+=`<div class="data-row">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h4 class="font-bold text-sm">${s.name}</h4>
+                        <p class="text-xs mt-0.5" style="color:var(--text-muted)">${s.category}</p>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button onclick="openEditServiceModal('${s.id}')" class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer border-none text-sm" style="background:rgba(15,139,139,0.08);color:var(--primary)"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteServiceItem('${s.id}','${s.name.replace(/'/g,"\\'")}')" class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer border-none text-sm" style="background:rgba(239,68,68,0.08);color:#ef4444"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg" style="background:rgba(15,139,139,0.08);color:var(--primary)">৳${s.price||0}/1k</span>
+                    ${s.apiServiceId ? `<span class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-teal-100 text-teal-800"><i class="fas fa-plug mr-1"></i>API ID: ${s.apiServiceId}</span>` : '<span class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-500">Manual</span>'}
+                    <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-gray-100" style="color:var(--text-muted)">Min: ${s.min||10}</span>
+                </div>
+            </div>`});
+    }catch(e){console.error(e)}
+}
+
+window.openAddServiceModal=()=>{
+    document.getElementById('modalTitle').innerText='Add New Service';
+    document.getElementById('modalEditId').value='';
+    document.getElementById('modalServiceName').value='';
+    document.getElementById('modalServiceCategory').value='';
+    document.getElementById('modalServiceApiId').value='';
+    document.getElementById('modalServicePrice').value='';
+    document.getElementById('modalServiceDesc').value='';
+    document.getElementById('modalServiceMin').value='10';
+    document.getElementById('modalServiceMax').value='100000';
+    document.getElementById('serviceModal').classList.add('show');
+};
+
+window.openEditServiceModal=(id)=>{
+    const s=allServicesCache.find(x=>x.id===id);if(!s)return;
+    document.getElementById('modalTitle').innerText='Edit Service';
+    document.getElementById('modalEditId').value=s.id;
+    document.getElementById('modalServiceName').value=s.name||'';
+    document.getElementById('modalServiceCategory').value=s.category||'';
+    document.getElementById('modalServiceApiId').value=s.apiServiceId||'';
+    document.getElementById('modalServicePrice').value=s.price||'';
+    document.getElementById('modalServiceDesc').value=s.desc||'';
+    document.getElementById('modalServiceMin').value=s.min||10;
+    document.getElementById('modalServiceMax').value=s.max||100000;
+    document.getElementById('serviceModal').classList.add('show');
+};
+
+window.closeServiceModal=()=>{document.getElementById('serviceModal').classList.remove('show')};
+
+window.saveService=async()=>{
+    const editId=document.getElementById('modalEditId').value;
+    const name=document.getElementById('modalServiceName').value.trim();
+    const cat=document.getElementById('modalServiceCategory').value.trim();
+    const apiServiceId=document.getElementById('modalServiceApiId').value.trim();
+    const price=parseFloat(document.getElementById('modalServicePrice').value);
+    const desc=document.getElementById('modalServiceDesc').value.trim();
+    const min=parseInt(document.getElementById('modalServiceMin').value)||10;
+    const max=parseInt(document.getElementById('modalServiceMax').value)||1000000;
+
+    if(!name||!cat||isNaN(price)){showToast('Fill all required fields','error');return}
+
+    try{
+        const data = {name, category:cat, apiServiceId, price, desc, min, max};
+        if(editId){await updateDoc(doc(db,"services",editId),data);showToast('Service updated','success')}
+        else{await addDoc(collection(db,"services"),{...data,createdAt:serverTimestamp()});showToast('Service created','success')}
+        closeServiceModal();loadServicesAdmin();
+    }catch(e){showToast('Error saving service','error')}
+};
+
+window.deleteServiceItem=(id,name)=>{
+    showConfirm('Delete Service',`Delete "${name}"?`,async()=>{
+        try{await deleteDoc(doc(db,"services",id));showToast('Deleted','success');loadServicesAdmin()}
+        catch(e){showToast('Error deleting','error')}
+    });
+};
+
+// ==========================================
+// ORDERS & REALTIME LISTENER
+// ==========================================
+function loadOrdersRealTime(){
+    const q=query(collection(db,"orders"),orderBy("timestamp","desc"));
+    onSnapshot(q,(snap)=>{
+        allOrdersCache=[];snap.forEach(d=>allOrdersCache.push({id:d.id,...d.data()}));
+        renderOrdersTable();updateStats();
+    });
+}
+
+function renderOrdersTable(){
+    const filter=document.getElementById('orderStatusFilter')?.value||'all';
+    const filtered=filter==='all'?allOrdersCache:allOrdersCache.filter(o=>o.status===filter);
+    const c=document.getElementById('ordersTableContainer');
+    if(!filtered.length){c.innerHTML=`<div class="text-center py-12 text-gray-400">No orders found</div>`;return}
+    c.innerHTML="";
+    filtered.forEach(o=>{
+        let badgeClass='badge-pending';
+        if(o.status==='Completed')badgeClass='badge-completed';
+        else if(o.status==='Processing'||o.status==='In Progress')badgeClass='badge-processing';
+        else if(o.status==='Cancelled')badgeClass='badge-cancelled';
+
+        c.innerHTML+=`<div class="data-row">
+            <div class="flex flex-wrap justify-between items-start gap-3">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-100">#${o.id?.slice(-8)}</span>
+                        ${o.apiOrderId ? `<span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-teal-100 text-teal-800"><i class="fas fa-plug mr-1"></i>API Order ID: ${o.apiOrderId}</span>` : ''}
+                        <span class="badge ${badgeClass}">${o.status||'Pending'}</span>
+                    </div>
+                    <h4 class="font-bold text-sm truncate">${o.service||'Service'}</h4>
+                    <p class="text-xs truncate mt-0.5 font-mono text-gray-500">${o.link||'No link'}</p>
+                    <div class="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+                        <span><i class="fas fa-user mr-1"></i>${o.uid||'—'}</span>
+                        <span>Qty: <strong>${o.qty||0}</strong></span>
+                        <span class="font-extrabold text-teal-700">৳${(o.cost||0).toFixed(2)}</span>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 items-end">
+                    <select id="statusSel_${o.id}" class="input-field" style="width:140px;padding:8px;font-size:12px">
+                        <option ${o.status==='Pending'?'selected':''}>Pending</option>
+                        <option ${o.status==='Processing'?'selected':''}>Processing</option>
+                        <option ${o.status==='In Progress'?'selected':''}>In Progress</option>
+                        <option ${o.status==='Completed'?'selected':''}>Completed</option>
+                        <option ${o.status==='Cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+                    <button onclick="updateOrderStatus('${o.id}')" class="btn-primary" style="padding:8px 16px;font-size:12px;width:140px;justify-content:center"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </div>
+        </div>`});
+}
+
+window.updateOrderStatus=async(orderId)=>{
+    const sel=document.getElementById(`statusSel_${orderId}`);
+    if(!sel)return;
+    try{await updateDoc(doc(db,"orders",orderId),{status:sel.value});showToast(`Status updated`,'success')}
+    catch(e){showToast('Error updating status','error')}
+};
+
+// DEPOSITS
+function loadDepositsRealTime(){
+    const q=query(collection(db,"deposit_requests"),orderBy("timestamp","desc"));
+    onSnapshot(q,(snap)=>{
+        allDepositsCache=[];snap.forEach(d=>allDepositsCache.push({id:d.id,...d.data()}));
+        renderDeposits();
+    });
+}
+function renderDeposits(){
+    const filtered=currentDepFilter==='all'?allDepositsCache:allDepositsCache.filter(d=>d.status===currentDepFilter);
+    const c=document.getElementById('depositsListContainer');
+    if(!filtered.length){c.innerHTML=`<div class="text-center py-12 text-gray-400">No deposit requests</div>`;return}
+    c.innerHTML="";
+    filtered.forEach(d=>{
+        const actions=d.status==='Pending'?`
+            <div class="flex gap-2 mt-2">
+                <button onclick="approveDeposit('${d.id}','${d.uid}',${d.amount})" class="btn-primary" style="padding:6px 12px;font-size:11px"><i class="fas fa-check"></i> Approve</button>
+                <button onclick="rejectDeposit('${d.id}')" class="btn-outline" style="padding:6px 12px;font-size:11px;color:red;border-color:red"><i class="fas fa-times"></i> Reject</button>
+            </div>`:'';
+        c.innerHTML+=`<div class="data-row">
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="badge ${d.status==='Approved'?'badge-completed':d.status==='Rejected'?'badge-cancelled':'badge-pending'}">${d.status}</span>
+                    <p class="font-bold text-sm mt-1">${d.uid} — ৳${d.amount}</p>
+                    <p class="text-xs text-gray-500">${d.method} | TRX: ${d.trxId}</p>
+                    ${actions}
+                </div>
+            </div>
+        </div>`});
+}
+window.filterDeposits=(f)=>{currentDepFilter=f;renderDeposits()};
+window.approveDeposit=async(reqId,uid,amount)=>{
+    try{
+        const snap=await getDoc(doc(db,"users",uid));
+        const curr=snap.exists()?(snap.data().balance||0):0;
+        await updateDoc(doc(db,"users",uid),{balance:curr+amount});
+        await updateDoc(doc(db,"deposit_requests",reqId),{status:'Approved'});
+        showToast(`Approved ৳${amount}`,'success');updateStats();
+    }catch(e){showToast('Error approving deposit','error')}
+};
+window.rejectDeposit=async(reqId)=>{
+    try{await updateDoc(doc(db,"deposit_requests",reqId),{status:'Rejected'});showToast('Rejected','info')}
+    catch(e){showToast('Error rejecting','error')}
+};
+
+// ==========================================
+// SETTINGS & API PROVIDER CONFIG
+// ==========================================
+async function loadSettings(){
+    try{
+        const snap=await getDoc(doc(db,"admin_settings","general"));
+        if(snap.exists()){
+            const d=snap.data();
+            document.getElementById('adminApiUrl').value=d.apiUrl||'';
+            document.getElementById('adminApiKey').value=d.apiKey||'';
+            document.getElementById('adminWhatsapp').value=d.whatsapp||'';
+            document.getElementById('adminTelegram').value=d.telegram||'';
+        }
+    }catch(e){}
+}
+
+window.saveSettings=async()=>{
+    const apiUrl=document.getElementById('adminApiUrl').value.trim();
+    const apiKey=document.getElementById('adminApiKey').value.trim();
+    const whatsapp=document.getElementById('adminWhatsapp').value.trim();
+    const telegram=document.getElementById('adminTelegram').value.trim();
+
+    try{
+        await setDoc(doc(db,"admin_settings","general"),{apiUrl,apiKey,whatsapp,telegram,updatedAt:serverTimestamp()},{merge:true});
+        showToast('API Settings Saved Successfully!','success');
+    }catch(e){showToast('Error saving settings','error')}
+};
+
+// Provider Balance Check API (CORS Bypass সহ)
+window.checkApiProviderBalance = async () => {
+    const apiUrl = document.getElementById('adminApiUrl').value.trim();
+    const apiKey = document.getElementById('adminApiKey').value.trim();
+    const resultBox = document.getElementById('apiBalanceResult');
+
+    if (!apiUrl || !apiKey) {
+        showToast('API URL and API Key are required!', 'error');
+        return;
+    }
+
+    try {
+        showToast('Checking Provider Balance...', 'info');
+        const params = new URLSearchParams();
+        params.append('key', apiKey);
+        params.append('action', 'balance');
+
+        let data;
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+            data = await response.json();
+        } catch (corsErr) {
+            console.warn("Direct fetch blocked by CORS. Retrying with CORS Proxy...");
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+            data = await response.json();
+        }
+
+        if (data && data.balance !== undefined) {
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = `<i class="fas fa-coins mr-1"></i> Provider Balance: <strong>${data.balance} ${data.currency || 'USD'}</strong>`;
+            showToast('Provider Balance Fetched Successfully!', 'success');
+        } else {
+            showToast('API Error: ' + (data?.error || 'Invalid API Response'), 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('API Connection Failed. Check URL & Key', 'error');
+    }
+};
+
+window.exportBackup=async()=>{
+    try{
+        const snap=await getDocs(collection(db,"users"));
+        const users=[];snap.forEach(d=>users.push({uid:d.id,...d.data()}));
+        const blob=new Blob([JSON.stringify(users,null,2)],{type:'application/json'});
+        const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        a.href=url;a.download=`smm_users_backup.json`;a.click();
+        showToast('Backup downloaded','success');
+    }catch(e){showToast('Error exporting','error')}
+};
+
+window.switchAdminTab=(tab)=>{
+    document.querySelectorAll('[id$="Tab"]').forEach(el=>el.classList.add('hidden'));
+    document.getElementById(`${tab}Tab`).classList.remove('hidden');
+    document.querySelectorAll('.tab-bar button').forEach(b=>b.className='tab-inactive');
+    const activeBtn=document.getElementById(`tab${tab.charAt(0).toUpperCase()+tab.slice(1)}Btn`);
+    if(activeBtn)activeBtn.className='tab-active';
+
+    if(tab==='users')loadUsers();
+    if(tab==='services')loadServicesAdmin();
+    if(tab==='orders')renderOrdersTable();
+    if(tab==='deposits')renderDeposits();
+    if(tab==='settings')loadSettings();
+};
+
+window.refreshAllData=()=>{
+    loadUsers();loadServicesAdmin();updateStats();renderOrdersTable();renderDeposits();loadSettings();
+    showToast('All Data Refreshed','success');
+};
+
+loadUsers();updateStats();loadOrdersRealTime();loadServicesAdmin();loadDepositsRealTime();loadSettings();
+</script>
+</body>
+</html>
