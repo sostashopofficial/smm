@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>First SMM Panel BD</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{
+            --primary:#10b981;--primary-dark:#059669;
+            --bg-main:#060d18;--bg-card:rgba(15,23,42,0.75);
+            --bg-input:rgba(30,41,59,0.85);--text-main:#f1f5f9;
+            --text-muted:#64748b;--border-color:rgba(148,163,184,0.12);
+            --glass-border:rgba(255,255,255,0.06);--radius-lg:20px;
+            --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+        }
+        body{
+            font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg-main);
+            color:var(--text-main);overflow-x:hidden;min-height:100vh;
+            padding-top:var(--safe-top);padding-bottom:var(--safe-bottom);
+        }
+        body.light-theme{
+            --bg-main:#f0f4f8;--bg-card:rgba(255,255,255,0.88);
+            --bg-input:rgba(241,245,249,0.92);--text-main:#0f172a;
+            --text-muted:#64748b;--border-color:rgba(15,23,42,0.08);
+            --glass-border:rgba(0,0,0,0.04);
+        }
+        body::before{
+            content:'';position:fixed;top:-120px;left:-80px;width:350px;height:350px;
+            background:radial-gradient(circle,rgba(16,185,129,0.1) 0%,transparent 70%);
+            border-radius:50%;z-index:0;pointer-events:none;animation:floatOrb 8s ease-in-out infinite;
+        }
+        @keyframes floatOrb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,20px) scale(1.1)}}
+
+        .page-section{display:none;opacity:0;transform:translateY(12px);transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;z-index:1}
+        .page-section.active{display:block;opacity:1;transform:translateY(0)}
+
+        .premium-header{
+            background:linear-gradient(160deg,rgba(16,185,129,0.12) 0%,rgba(15,23,42,0.85) 60%);
+            border-radius:0 0 36px 36px;border-bottom:1px solid var(--glass-border);
+            backdrop-filter:blur(20px);position:relative;z-index:2;overflow:hidden;
+        }
+
+        .glass-card{
+            background:var(--bg-card);backdrop-filter:blur(20px);border-radius:var(--radius-lg);
+            border:1px solid var(--glass-border);box-shadow:0 8px 24px rgba(0,0,0,0.25);
+            transition:transform .15s ease;
+        }
+
+        .input-modern{
+            width:100%;background:var(--bg-input);border:1.5px solid var(--border-color);
+            border-radius:14px;padding:14px 16px;font-size:14px;font-weight:500;
+            color:var(--text-main);outline:none;transition:all .2s;
+            font-family:'Plus Jakarta Sans',sans-serif;
+        }
+        .input-modern:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(16,185,129,0.12)}
+
+        .btn-primary-solid{
+            background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+            color:white;width:100%;padding:16px;border-radius:16px;font-weight:800;font-size:14px;
+            box-shadow:0 8px 24px rgba(16,185,129,0.3);transition:0.2s;border:none;cursor:pointer;
+        }
+        .btn-primary-solid:disabled{opacity:0.5;cursor:not-allowed}
+
+        .btn-secondary-solid{
+            background:var(--bg-input);color:var(--text-main);width:100%;padding:16px;
+            border-radius:16px;font-weight:800;font-size:14px;
+            border:1px solid var(--border-color);cursor:pointer;
+        }
+
+        .bottom-nav-premium{
+            position:fixed;bottom:16px;left:16px;right:16px;
+            background:var(--bg-card);backdrop-filter:blur(30px);height:72px;
+            border-radius:36px;display:flex;justify-content:space-around;align-items:center;
+            box-shadow:0 15px 40px rgba(0,0,0,0.4),0 0 0 1px var(--glass-border);z-index:1100;
+        }
+        .nav-item-premium{
+            display:flex;flex-direction:column;align-items:center;gap:5px;
+            color:var(--text-muted);transition:all .25s;cursor:pointer;
+            font-weight:700;padding:8px 14px;border-radius:18px;
+        }
+        .nav-item-premium.active{
+            color:var(--primary);background:rgba(16,185,129,0.1);
+        }
+
+        .stat-card{
+            background:rgba(255,255,255,0.05);backdrop-filter:blur(10px);
+            border-radius:16px;border:1px solid rgba(255,255,255,0.08);padding:16px;
+        }
+
+        .order-status{font-size:9px;font-weight:800;padding:4px 10px;border-radius:40px;text-transform:uppercase}
+        .form-label{font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block}
+        .section-title{font-size:22px;font-weight:900}
+        .price-preview-box{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:14px;padding:12px;text-align:center}
+
+        .deposit-method{background:var(--bg-input);border:1px solid var(--border-color);border-radius:14px;padding:8px 16px;font-size:12px;font-weight:700;color:var(--text-main);cursor:pointer}
+        .deposit-method.active-method{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#34d399}
+
+        .splash-bg{background:radial-gradient(ellipse at 30% 20%,rgba(16,185,129,0.12) 0%,transparent 50%),var(--bg-main)}
+        .splash-icon{background:linear-gradient(135deg,#10b981 0%,#059669 100%);box-shadow:0 20px 50px rgba(16,185,129,0.35)}
+
+        .toast-container{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;display:flex;flex-direction:column;gap:8px;width:90%;max-width:380px}
+        .toast-item{pointer-events:auto;padding:14px 18px;border-radius:16px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:10px;box-shadow:0 12px 30px rgba(0,0,0,0.35)}
+        .toast-success{background:rgba(16,185,129,0.92);color:white}
+        .toast-error{background:rgba(239,68,68,0.92);color:white}
+
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);z-index:9998;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+        .modal-overlay.show{opacity:1;pointer-events:auto}
+        .modal-sheet{background:var(--bg-card);backdrop-filter:blur(30px);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:8px 24px 32px;border:1px solid var(--glass-border)}
+    </style>
+</head>
+<body class="max-w-[480px] mx-auto relative">
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-sheet">
+            <h3 id="modalTitle" class="text-lg font-black mb-2 mt-4">Confirm Order</h3>
+            <div id="modalBody" class="text-sm text-slate-400 mb-6 space-y-1.5"></div>
+            <div class="flex gap-3">
+                <button id="modalCancelBtn" class="btn-secondary-solid flex-1" style="padding:14px">CANCEL</button>
+                <button id="modalConfirmBtn" class="btn-primary-solid flex-1" style="padding:14px">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPLASH -->
+    <div id="splashScreen" class="fixed inset-0 z-[9999] splash-bg flex flex-col items-center justify-center">
+        <div class="splash-icon w-24 h-24 rounded-[28px] flex items-center justify-center animate-bounce">
+            <i class="fas fa-bolt text-white text-4xl"></i>
+        </div>
+        <h1 class="mt-6 text-2xl font-black text-white tracking-tight">FIRST SMM</h1>
+        <p class="text-slate-500 text-[10px] font-bold mt-1.5 tracking-widest uppercase">বাংলাদেশের #1 প্যানেল</p>
+    </div>
+
+    <div class="pb-32">
+        <!-- HEADER -->
+        <header class="premium-header px-5 pt-7 pb-7">
+            <div class="flex items-center justify-between mb-6 relative z-10">
+                <div class="flex items-center gap-3">
+                    <img id="userAvatar" src="" class="w-12 h-12 rounded-xl object-cover shadow-lg" alt="Avatar">
+                    <div>
+                        <h3 id="userFullName" class="font-extrabold text-base tracking-tight text-white">Loading...</h3>
+                        <div class="flex items-center gap-1.5 text-slate-400 text-[10px] font-mono">
+                            <span id="userIdDisplay">ID: ...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 relative z-10">
+                <div class="stat-card">
+                    <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400">ব্যালান্স</p>
+                    <h2 id="globalBalance" class="text-xl font-black text-white tracking-tight">৳ 0.00</h2>
+                </div>
+                <div class="stat-card">
+                    <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400">অর্ডার</p>
+                    <h2 id="globalTotalOrders" class="text-xl font-black text-white tracking-tight">0</h2>
+                </div>
+            </div>
+        </header>
+
+        <!-- HOME -->
+        <section id="homeSection" class="page-section active px-5 mt-5">
+            <div class="glass-card p-5 mb-5">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-extrabold text-sm"><i class="fas fa-cart-plus text-emerald-400 mr-2"></i>New Order</h3>
+                    <div class="text-[8px] font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md tracking-wider">INSTANT</div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="form-label">1. Category</label>
+                        <select id="categorySelect" class="input-modern">
+                            <option value="" disabled selected>Choose category...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">2. Service</label>
+                        <select id="serviceSelect" class="input-modern">
+                            <option value="" disabled selected>Select category first</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">3. Target Link</label>
+                        <input type="text" id="targetUrl" class="input-modern" placeholder="https://facebook.com/username">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="form-label">4. Quantity</label>
+                            <input type="number" id="orderQuantity" class="input-modern" value="100">
+                        </div>
+                        <div>
+                            <label class="form-label">5. Cost</label>
+                            <div class="price-preview-box" id="pricePreview">
+                                <span class="text-lg font-black text-emerald-400">৳ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="placeOrderBtn" class="btn-primary-solid">এখনই অর্ডার দিন</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ORDERS -->
+        <section id="ordersSection" class="page-section px-5">
+            <h2 class="section-title mb-5 mt-1">আমার অর্ডার</h2>
+            <div id="ordersContainer" class="space-y-3 pb-4"></div>
+        </section>
+
+        <!-- FUNDS -->
+        <section id="fundsSection" class="page-section px-5">
+            <h2 class="section-title mb-5 mt-1">অ্যাড ফান্ড</h2>
+            <div class="glass-card p-5 space-y-4">
+                <div>
+                    <label class="form-label">পরিমান (BDT)</label>
+                    <input type="number" id="depositAmount" class="input-modern" placeholder="ন্যূনতম ৫০৳">
+                </div>
+                <div>
+                    <label class="form-label">ট্রাঞ্জেকশন আইডি</label>
+                    <input type="text" id="depositTrxId" class="input-modern" placeholder="BKASH8S7D6F">
+                </div>
+                <button id="requestDepositBtn" class="btn-secondary-solid">সাবমিট রিকোয়েস্ট</button>
+            </div>
+            <div id="depositHistoryContainer" class="mt-5"></div>
+        </section>
+    </div>
+
+    <!-- NAV -->
+    <nav class="bottom-nav-premium">
+        <div class="nav-item-premium active" data-page="home"><i class="fas fa-home"></i><span>Home</span></div>
+        <div class="nav-item-premium" data-page="orders"><i class="fas fa-list-check"></i><span>Orders</span></div>
+        <div class="nav-item-premium" data-page="funds"><i class="fas fa-wallet"></i><span>Funds</span></div>
+    </nav>
+
+    <script type="importmap">
+    {"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js","firebase/firestore":"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"}}
+    </script>
+
+    <script type="module">
+        import{initializeApp}from"firebase/app";
+        import{getFirestore,doc,collection,onSnapshot,setDoc,updateDoc,addDoc,serverTimestamp,query,where,orderBy,getDoc}from"firebase/firestore";
+
+        const firebaseConfig={apiKey:"AIzaSyCdPFDGIxUBDi3C-ES9I18LsNy_621Bf_s",authDomain:"takahubpro.firebaseapp.com",projectId:"takahubpro",storageBucket:"takahubpro.firebasestorage.app",messagingSenderId:"683565669304",appId:"1:683565669304:web:acc776890740c726b20d4d"};
+        const app=initializeApp(firebaseConfig);
+        const db=getFirestore(app);
+
+        const tg=window.Telegram?.WebApp||null;
+        let currentUserId="",allServices=[],userBalance=0,userTotalOrders=0;
+        let currentServiceData=null, apiConfig={apiUrl:'', apiKey:''};
+
+        function showToast(message,type='info'){
+            const container=document.getElementById('toastContainer');
+            const toast=document.createElement('div');
+            toast.className=`toast-item toast-${type}`;
+            toast.innerHTML=`<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(()=>toast.remove(),3000);
+        }
+
+        function showModalConfirm(title,bodyHtml,onConfirm){
+            document.getElementById('modalTitle').innerText=title;
+            document.getElementById('modalBody').innerHTML=bodyHtml;
+            const overlay=document.getElementById('confirmModal');
+            overlay.classList.add('show');
+            
+            const cBtn = document.getElementById('modalConfirmBtn');
+            const newCBtn = cBtn.cloneNode(true);
+            cBtn.parentNode.replaceChild(newCBtn, cBtn);
+            
+            newCBtn.addEventListener('click',()=>{
+                overlay.classList.remove('show');
+                onConfirm();
+            });
+            document.getElementById('modalCancelBtn').onclick=()=>overlay.classList.remove('show');
+        }
+
+        async function loadApiConfig(){
+            try{
+                const snap = await getDoc(doc(db, "admin_settings", "general"));
+                if(snap.exists()){
+                    const d = snap.data();
+                    apiConfig.apiUrl = d.apiUrl || '';
+                    apiConfig.apiKey = d.apiKey || '';
+                }
+            }catch(e){console.error('API Config load error:', e)}
+        }
+
+        // ==========================================
+        //  FIXED USER BALANCE (জিরো রিসেট রিমুভড)
+        // ==========================================
+        async function initUser(uid){
+            currentUserId=uid;
+            const userRef=doc(db,"users",uid);
+            const snap=await getDoc(userRef);
+            if(!snap.exists()){
+                await setDoc(userRef,{name:tg?.initDataUnsafe?.user?.first_name||"User",balance:0,total_orders:0,createdAt:serverTimestamp()});
+            }
+            onSnapshot(userRef,(docSnap)=>{
+                if(docSnap.exists()){
+                    const d=docSnap.data();
+                    userBalance=d.balance||0;
+                    userTotalOrders=d.total_orders||0;
+                    document.getElementById('globalBalance').innerText=`৳ ${userBalance.toFixed(2)}`;
+                    document.getElementById('globalTotalOrders').innerText=userTotalOrders;
+                }
+            });
+        }
+
+        function loadServicesList(){
+            onSnapshot(collection(db,"services"),(snapshot)=>{
+                allServices=[];const cats=new Set();
+                snapshot.forEach(d=>{const data={id:d.id,...d.data()};allServices.push(data);if(data.category)cats.add(data.category)});
+                const cs=document.getElementById('categorySelect');
+                cs.innerHTML=`<option value="" disabled selected>Choose category...</option>`;
+                Array.from(cats).sort().forEach(c=>cs.innerHTML+=`<option value="${c}">${c}</option>`);
+            });
+        }
+
+        document.getElementById('categorySelect').addEventListener('change',()=>{
+            const cat=document.getElementById('categorySelect').value;
+            const ss=document.getElementById('serviceSelect');
+            const f=allServices.filter(s=>s.category===cat);
+            ss.innerHTML=`<option value="" disabled selected>Select service...</option>`;
+            f.forEach(s=>{ss.innerHTML+=`<option value="${s.id}">${s.name} — ৳${s.price||0}/1k</option>`;});
+        });
+
+        document.getElementById('serviceSelect').addEventListener('change',()=>{
+            const sid=document.getElementById('serviceSelect').value;
+            currentServiceData=allServices.find(s=>s.id===sid)||null;
+            calcPrice();
+        });
+
+        document.getElementById('orderQuantity').addEventListener('input',calcPrice);
+
+        function calcPrice(){
+            const ppk=currentServiceData?.price||0;
+            const qty=parseInt(document.getElementById('orderQuantity').value)||0;
+            if(ppk>0&&qty>0){
+                const t=(ppk*qty)/1000;
+                document.getElementById('pricePreview').innerHTML=`<span class="text-lg font-black text-emerald-400">৳ ${t.toFixed(2)}</span>`;
+                return t;
+            }
+            document.getElementById('pricePreview').innerHTML=`<span class="text-lg font-black text-emerald-400">৳ 0.00</span>`;
+            return 0;
+        }
+
+        // ==========================================
+        // 🚀 AUTOMATED API ORDER PROCESS (CORS BYPASS)
+        // ==========================================
+        document.getElementById('placeOrderBtn').addEventListener('click',async()=>{
+            const link=document.getElementById('targetUrl').value.trim();
+            const qty=parseInt(document.getElementById('orderQuantity').value);
+
+            if(!currentServiceData||!link||!qty){
+                showToast('সবগুলো তথ্য সঠিকভাবে দিন','error');
+                return;
+            }
+
+            const cost=(currentServiceData.price*qty)/1000;
+
+            if(userBalance < cost){
+                showToast('আপনার একাউন্টে পর্যাপ্ত ব্যালেন্স নেই!','error');
+                return;
+            }
+
+            showModalConfirm(
+                'অর্ডার কনফার্মেশন',
+                `সার্ভিস: ${currentServiceData.name}<br>পরিমাণ: ${qty}<br>মোট খরচ: ৳${cost.toFixed(2)}`,
+                async()=>{await processOrderWithApi(currentServiceData, qty, link, cost)}
+            );
+        });
+
+        async function processOrderWithApi(service, qty, link, cost) {
+            const btn = document.getElementById('placeOrderBtn');
+            btn.disabled = true;
+            showToast('অর্ডার প্রসেস হচ্ছে...', 'info');
+
+            let apiOrderId = null;
+            let finalStatus = "Processing";
+
+            if (service.apiServiceId && apiConfig.apiUrl && apiConfig.apiKey) {
+                try {
+                    const params = new URLSearchParams();
+                    params.append('key', apiConfig.apiKey);
+                    params.append('action', 'add');
+                    params.append('service', service.apiServiceId);
+                    params.append('link', link);
+                    params.append('quantity', qty);
+
+                    let apiData;
+                    try {
+                        const res = await fetch(apiConfig.apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params
+                        });
+                        apiData = await res.json();
+                    } catch (corsErr) {
+                        console.warn("CORS Error. Retrying order via Proxy...");
+                        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiConfig.apiUrl);
+                        const res = await fetch(proxyUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params
+                        });
+                        apiData = await res.json();
+                    }
+
+                    if (apiData && apiData.order) {
+                        apiOrderId = apiData.order.toString();
+                        finalStatus = "Processing";
+                        showToast(`অর্ডার সফলভাবে API তে সাবমিট হয়েছে! (ID: ${apiOrderId})`, 'success');
+                    } else {
+                        console.warn("API Error Response:", apiData);
+                        finalStatus = "Pending";
+                        showToast('API রেসপন্স ব্যর্থ, ম্যানুয়াল পেন্ডিং এ রাখা হলো।', 'error');
+                    }
+                } catch (e) {
+                    console.error("API Call Exception:", e);
+                    finalStatus = "Pending";
+                }
+            } else {
+                finalStatus = "Completed";
+            }
+
+            try {
+                await addDoc(collection(db, "orders"), {
+                    uid: currentUserId,
+                    service: service.name,
+                    qty: qty,
+                    link: link,
+                    cost: cost,
+                    status: finalStatus,
+                    apiOrderId: apiOrderId || null,
+                    timestamp: serverTimestamp(),
+                    createdAt: new Date().toISOString()
+                });
+
+                const newBal = userBalance - cost;
+                await updateDoc(doc(db, "users", currentUserId), {
+                    balance: newBal,
+                    total_orders: userTotalOrders + 1
+                });
+
+                if (!apiOrderId) {
+                    showToast('অর্ডার সফলভাবে জমা হয়েছে!', 'success');
+                }
+
+                document.getElementById('targetUrl').value = '';
+            } catch (e) {
+                console.error(e);
+                showToast('অর্ডার সেভ করতে সমস্যা হয়েছে', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function listenUserOrders(uid){
+            const q=query(collection(db,"orders"),where("uid","==",uid),orderBy("timestamp","desc"));
+            onSnapshot(q,(s)=>{
+                const c=document.getElementById('ordersContainer');
+                c.innerHTML="";
+                s.forEach(d=>{
+                    const o=d.data();
+                    c.innerHTML+=`<div class="glass-card p-4">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-mono text-xs text-slate-400">#${o.apiOrderId || d.id.slice(-6)}</span>
+                            <span class="order-status bg-emerald-500/15 text-emerald-400">${o.status}</span>
+                        </div>
+                        <h4 class="font-bold text-xs">${o.service}</h4>
+                        <p class="text-[10px] text-slate-500 font-mono mt-1">${o.link}</p>
+                        <div class="flex justify-between mt-2 text-xs">
+                            <span>Qty: ${o.qty}</span>
+                            <span class="font-bold text-emerald-400">৳${o.cost.toFixed(2)}</span>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        document.getElementById('requestDepositBtn').addEventListener('click',async()=>{
+            const amt=parseFloat(document.getElementById('depositAmount').value);
+            const trx=document.getElementById('depositTrxId').value.trim();
+
+            if(!amt||!trx)return showToast('সব তথ্য পূরণ করুন','error');
+
+            await addDoc(collection(db,"deposit_requests"),{
+                uid: currentUserId, amount: amt, trxId: trx.toUpperCase(),
+                method: "bKash", status: "Pending", timestamp: serverTimestamp()
+            });
+            showToast('ডিপোজিট রিকোয়েস্ট সাবমিট করা হয়েছে','success');
+            document.getElementById('depositAmount').value='';
+            document.getElementById('depositTrxId').value='';
+        });
+
+        const sections={home:document.getElementById('homeSection'),orders:document.getElementById('ordersSection'),funds:document.getElementById('fundsSection')};
+        document.querySelectorAll('.nav-item-premium').forEach(n=>n.addEventListener('click',()=>{
+            const p=n.getAttribute('data-page');
+            Object.values(sections).forEach(s=>s.classList.remove('active'));
+            sections[p].classList.add('active');
+        }));
+
+        window.addEventListener('load',async()=>{
+            const u=tg?.initDataUnsafe?.user||{id:Date.now(),first_name:"SMM User"};
+            const uid=u.id.toString();
+
+            document.getElementById('userAvatar').src=`https://ui-avatars.com/api/?name=${encodeURIComponent(u.first_name)}&background=10b981&color=fff`;
+            document.getElementById('userFullName').innerText=u.first_name;
+            document.getElementById('userIdDisplay').innerText=`ID: ${uid}`;
+
+            await loadApiConfig();
+            await initUser(uid);
+            loadServicesList();
+            listenUserOrders(uid);
+
+            setTimeout(()=>document.getElementById('splashScreen')?.remove(),1500);
+        });
+    </script>
+</body>
+</html>
